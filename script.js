@@ -1,81 +1,79 @@
-const terminal = document.getElementById("terminal");
-const input = document.getElementById("input");
+const chatBox = document.getElementById("chatBox");
 
-function addLine(text) {
-    terminal.innerHTML += "<p>" + text + "</p>";
-    terminal.scrollTop = terminal.scrollHeight;
+let memory = [];
+
+function addMessage(sender, text) {
+  const msg = document.createElement("div");
+  msg.className = sender;
+  msg.innerText = text;
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// SPEAK
-function speak(text) {
-    const speech = new SpeechSynthesisUtterance(text);
-    window.speechSynthesis.speak(speech);
+function typeEffect(text) {
+  let i = 0;
+  const msg = document.createElement("div");
+  msg.className = "ai";
+  chatBox.appendChild(msg);
+
+  const interval = setInterval(() => {
+    msg.innerText += text[i];
+    i++;
+    if (i >= text.length) clearInterval(interval);
+  }, 15);
 }
 
-// MEMORY
-let memory = {};
+function sendMessage() {
+  const input = document.getElementById("userInput");
+  const text = input.value.trim();
 
-// COMMAND SYSTEM
-function processCommand(cmd) {
-    cmd = cmd.toLowerCase();
+  if (!text) return;
 
-    if (cmd.includes("hello")) {
-        return "Hello. Dark AI active.";
-    }
-    else if (cmd.includes("who are you")) {
-        return "I am Dark AI, your intelligent system.";
-    }
-    else if (cmd.includes("activate security")) {
-        return "🔐 Security protocol activated.";
-    }
-    else if (cmd.includes("dark devil")) {
-        return "⚫ Dark Devil Protocol engaged.";
-    }
-    else if (cmd.startsWith("remember")) {
-        let data = cmd.replace("remember", "").trim();
-        memory["data"] = data;
-        return "Memory stored.";
-    }
-    else if (cmd.includes("what do you remember")) {
-        return memory["data"] || "Nothing stored.";
-    }
-    else {
-        return "Command not recognized.";
-    }
+  memory.push("User: " + text);
+
+  addMessage("user", text);
+  input.value = "";
+
+  setTimeout(() => {
+    const reply = getAIResponse(text.toLowerCase());
+    memory.push("AI: " + reply);
+
+    typeEffect(reply);
+  }, 500);
 }
 
-// RUN
-function runCommand(cmd) {
-    addLine("> " + cmd);
-    let response = processCommand(cmd);
-    addLine(response);
-    speak(response);
-}
-
-// ENTER KEY
-input.addEventListener("keypress", function(e) {
-    if (e.key === "Enter") {
-        runCommand(input.value);
-        input.value = "";
-    }
+// ENTER key support
+document.getElementById("userInput")
+.addEventListener("keypress", function(e) {
+  if (e.key === "Enter") sendMessage();
 });
 
-// VOICE
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-const recognition = new SpeechRecognition();
+function getAIResponse(input) {
 
-recognition.onresult = function(event) {
-    const voiceText = event.results[0][0].transcript;
-    runCommand(voiceText);
-};
+  if (input.includes("who are you")) {
+    return "I am DARK AI — created by Vega. I learn, respond, and evolve.";
+  }
 
-document.addEventListener("keydown", (e) => {
-    if (e.key === "v") {
-        recognition.start();
-    }
-});
+  if (input.includes("portfolio") || input.includes("projects")) {
+    return "Projects: Dark AI System, Calculator App, More coming soon.";
+  }
 
-// BOOT
-addLine("Initializing Dark AI...");
-addLine("Voice module ready (press V)...");
+  if (input.includes("vega") || input.includes("creator")) {
+    return "Creator: Joshua (Vegaark) — AI developer.";
+  }
+
+  if (input.includes("hello") || input.includes("hi")) {
+    return "Hello. I am ready.";
+  }
+
+  if (input.includes("how") || input.includes("why") || input.includes("what")) {
+    return "Analyzing your question... My system is generating a logical response.";
+  }
+
+  if (input.length > 25) {
+    return "Deep input detected... Expanding intelligence soon.";
+  }
+
+  return "I am evolving. Ask me anything.";
+}
 addLine("System Ready.");
